@@ -1,0 +1,6 @@
+!.gitignore
+final_report_cache
+final_report_files
+final_report.log
+*.R
+*.py
