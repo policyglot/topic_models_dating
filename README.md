@@ -5,20 +5,21 @@ This codes runs on Python 3.6 for the majority of the analysis, and then switche
 
 
 #### Python
-gensim
-wordninja
-SpellChecker
-pyspellchecker
-beautifulsoup
-spacy
-textacy
-tqdm
-nltk
-pyldavis
+* gensim
+* wordninja
+* SpellChecker
+* pyspellchecker
+* beautifulsoup
+* spacy
+* textacy
+* tqdm
+* nltk
+* pyldavis
 
 #### R
-stm
-quanteda
+* stm
+* quanteda
+* tidyverse
 
 ### File Descriptions
 
