@@ -1,0 +1,10 @@
+scikit-learn
+gensim
+wordninja
+pyspellchecker
+beautifulsoup
+spacy
+textacy
+tqdm
+nltk
+pyldavis

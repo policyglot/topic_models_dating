@@ -1,0 +1,253 @@
+---
+title: "lda_quanteda"
+author: "Abhishek Pandit"
+date: "6 May 2020"
+output: html_document
+---
+```{r}
+library(readtext)
+library(stm)
+library(quanteda)
+library(topicmodels)
+library(tidytext)
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+library(scales)
+library(tm)
+library(grid)
+library(wordcloud)
+library(wordcloud2)
+library(tidyverse)
+```
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+dating_data <-readtext(('D:/Dropbox/Chicago/Courses/Thesis/unsupervised-dating/data/final_okcupid.csv'), text_field='essay0')
+dating_corpus <-corpus(dating_data)
+```
+Now we see what we've produced
+```{r}
+print(dating_corpus)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+```{r}
+toks <- tokens(dating_corpus, remove_punct = TRUE)
+toks_nostop <- tokens_select(toks, pattern = stopwords('en'), selection = 'remove')
+toks_ngrams = tokens_ngrams(toks_nostop, n = 1:2)
+```
+
+```{r}
+tok_dfm <-dfm(toks_ngrams)
+final_dfm<-dfm_trim(tok_dfm, min_termfreq =2000, termfreq_type="rank" )
+```
+Now remove the stopwords
+
+
+```{r}
+topfeatures(final_dfm, 10)
+```
+
+```{r}
+dating_docvars <-docvars(final_dfm)
+```
+
+
+```{r}
+tstat_dist <- as.dist(textstat_dist(final_dfm))
+clust <- hclust(tstat_dist)
+plot(clust, xlab = "Distance", ylab = NULL)
+```
+# Now trying to combine STM with the dfm object, as promised in the documentation
+
+```{r}
+dfm2stm <- convert(final_dfm, to = "stm", omit_empty = TRUE, docvars = dating_docvars )
+```
+```{r}
+meta<-dfm2stm$meta
+vocab<-dfm2stm$vocab
+docs<-dfm2stm$documents
+out <- prepDocuments(docs, vocab, meta)
+docs<-out$documents
+vocab<-out$vocab
+meta <-out$meta
+```
+
+
+
+
+```{r}
+dating_stm <- stm(documents =docs, vocab = vocab,
+              K = 11, prevalence =~ dating_stm + edu + height_group + race_ethnicity +  dbscan_cluster,
+              max.em.its = 50, data = meta,
+              init.type = "Spectral", verbose=FALSE)
+```
+
+```{r}
+labelTopics(dating_stm, c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11), n=20)
+```
+
+```{r}
+dating_stm<-dating_stm
+```
+
+
+
+qeq
+```{r}
+Select <- selectModel(docs, vocab, K = 11,
+                              prevalence =~ dating_stm + edu + height_group + race_ethnicity + dbscan_cluster, 
+                              max.em.its = 50, verbose=FALSE,
+                              data = out$meta, runs = 10, seed = 8458159)
+
+```
+Now we plot the models
+
+```{r}
+#par(mar=c(1,1,1,1))
+#dev.off()
+plotModels(Select, pch=c(1,2,3,4), legend.position="bottomright")
+
+
+```
+
+
+
+
+```{r}
+
+#storage <- searchK(out$documents, out$vocab, K = seq(2:10), verbose=FALSE,
+#                   prevalence =~ dating_stm + edu + height_group + race_ethnicity, data = out$meta)
+labelTopics(dating_stm, c(9,10,11), n=20)
+```
+
+Now the thoughts
+```{r find_clusters_number}
+
+#Fit the STM model
+datingExp <- stm(documents = docs, vocab = vocab,
+                       K = 25, prevalence =~ fit + edu + height_group + race_ethnicity + dbscan_cluster,
+                       max.em.its = 50, data = meta,
+                       init.type = "Spectral", verbose=FALSE)
+
+#Find optimal topic numbers
+coh <- data.frame('numbers' = 1:25, "Score" = semanticCoherence(datingExp, out$documents))
+ggplot(data=coh, aes(x = numbers, y = Score))+
+       geom_line(color = "#00AFBB", size = 1) +
+  ylab ('Negative Semantic Score') +
+  xlab ('Number of Topics') +
+  ggtitle('Selection of Optimal Number of Topics Using Semantic Coherence Score')
+```
+```{r}
+optimalK <- which.max(semanticCoherence(datingExp, out$documents))
+optimalK
+```
+
+
+```{r full-25-model}
+
+
+
+
+```
+
+
+
+
+
+```{r}
+#Output most representative documents for a particular topic
+thoughts3 <- findThoughts(dating_stm, text = as.character(out$meta$essay0), topics=c(8), n = 1)$docs[[1]]
+
+par(mfrow = c(1, 3),mar = c(.5, .5, 1, .5))
+plotQuote(thoughts3, width = 30, main = "Topic 3")
+```
+
+```{r}
+
+```
+
+
+```{r}
+
+```
+
+
+```{r}
+#Estimate metadata/topic relationships
+prep <- estimateEffect(1:11 ~ fit + edu + height_group + race_ethnicity + dbscan_cluster , dating_stm ,
+                         meta = out$meta, uncertainty = "Global")
+summary(prep, topics=c(1:11))
+
+```
+
+
+
+
+```{r}
+
+#Graphical display of estimated topic proportions
+plot(dating_stm, type = "summary", xlim = c(0, .3))
+
+#Summary visualization
+par(mfrow=c(1,1))
+plot.STM(dating_stm,type = "summary")
+
+#Metadata/topic relationship visualization
+##the marginal topic proportion for each of the levels
+dev.off() 
+plot.estimateEffect(prep, covariate = 'edu', method='pointestimate')
+
+dev.off() 
+plot.estimateEffect(prep, covariate = 'race_ethnicity', method='pointestimate')
+
+#Topical content
+##A topical content variable allows for the vocabulary used to talk about a particular topic to vary.
+Content <- stm(out$documents, out$vocab, K = optimalK,
+                          prevalence =~ dating_stm + edu + height_group , 
+                          content =~ race_ethnicity,
+                          max.em.its = 50, data = out$meta, init.type = "Spectral", verbose=FALSE)
+
+
+
+#Which words within a topic are more associated with one covariate value versus another
+##Figure: Graphical display of topical perspectives.
+plot(Content, type = "perspectives", topics = 2)
+##Figure: Graphical display of topical contrast between topics 1 and 2
+plot(Content, type = "perspectives", topics = c(1,2))
+
+
+
+#Word cloud display of vice President topic.
+cloud(dating_stm, topic = 1, scale = c(5,0.3) )
+
+#Positive correlations between topics indicate that both topics are likely to be discussed within a document.
+mod.out.corr <- topicCorr(dating_stm)
+#Graphical display of topic correlations.
+plot(mod.out.corr)
+
+
+```
+
+```{r}
+#Positive correlations between topics indicate that both topics are likely to be discussed within a document.
+
+mod.out.corr <- topicCorr(dating_stm, cutoff = 0.1)
+#Graphical display of topic correlations.
+plot(mod.out.corr)
+#dev.off()
+```
+
+```{r}
+#getOption("device")
+options(device = "RStudioGD")
+#dev.set(which = dev.next())
+```
+
