@@ -45,10 +45,16 @@ The repository contains a mix of .py files for utilies, Jupyter notebooks for ea
 
 * quant_eda_stm.rmd- Contains code to perform Latent Dirichlet Analysis (LDA) and build a Structural Topic Model over it
 
+#### sav files
+
+* nmf.sav - The Jupyter notebooks provide all the necessary code to generate the tables and analyses in the blogpost. However, you can skip a few steps and load the model directly from this file.
+
+### Data sets: [OkCupid Data](https://github.com/rudeboybert/JSE_OkCupid/blob/master/profiles.csv.zip)
+
 ### How to Interact With the Project
 
-You can install the necessary libraries as shown above, and download the raw data using the link in the next section. 
-The full dataset is not very large (compared to other datasets frequently being used in text analysis). Nonetheless, it may take 10 minutes (at most) to download. Make sure you maintain the name of the csv file as 'profiles'. 
+* You can install the necessary libraries as shown above, and download the raw data using the link in the next section. 
+* The full dataset is not very large (compared to other datasets frequently being used in text analysis). Make sure you unzip the folder with the folder name unchanged 'profiles.csv', and unzip it to one step back in your directory (not the same folder as your main analysis). This will ensure compatibility with the code posted in the notebooks. 
 You will need to run the Data_Filter.ipynb file first, but are free to run the other analyses in any order. 
 
 ### Licensing, Authors, Acknowledgements, etc.
@@ -59,8 +65,6 @@ have been duly referenced:
 * [Computational Social Science Workshop, University of Michigan](https://github.com/UM-CSS/CSSLabs-NLP)
 
 It also builds off the initial explorations conducted in Fall 2019 as a team project with my classmates, which can be accessed at its own repository here: [Unsupervised Dating](https://github.com/tonofshell/unsupervised-dating)
-
-### Data sets: [OkCupid Data](https://github.com/rudeboybert/JSE_OkCupid)
 
 ### Key Findings:
 * On the whole, single heterosexual men in the data write profiles of about the same length, with roughly the same use of language, spread over same 5 topics, with the first 3 (the area, hobbies and sociability) taking up most (82%) of it. The differences that emerge for different backgrounds (race, education, fitness and height) only start emerging in the remaining18%.
