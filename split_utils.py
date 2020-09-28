@@ -16,8 +16,8 @@ corrections ={r"won\'t": "will not",
 
 spellcheck = SpellChecker()
 
-def decontracted(phrase):  
-
+def decontract(phrase): 
+ 
     for k,v in corrections.items():
         phrase = re.sub(k, v, phrase)
     return phrase
@@ -29,21 +29,21 @@ def split_word(compound_word):
     Returns string with spaced words
     '''
     sep_words = wordninja.split(compound_word)
-    return sep_words
+    return " ".join(sep_words)
 
-def decide_split(word):
-    if not spellcheck[word]:
-        nearest = spellcheck.correction(word)
-        #When there is no valid word, the nearest word
-        #is the same as the original
-        if word == nearest:
-            print('The compound word is {}'.format(word))
-            return split_word(word)
-        else:
-            return nearest
-    else:
-        return word
-
+def replace_nearest(word):
+    """
+    Replaces incorrect words with the closest correct one
+    If no such word is found, commence splitting in split_word
+    """    
+    nearest = spellcheck.correction(word)
+    #When there is no valid word, the nearest word
+    #is the same as the original
+    if word == nearest:
+        #This implies we need to try splitting it
+        return split_word(word)
+    return nearest
+    
 def split_incorrect(text):
     '''
     Takes in a long string
@@ -54,8 +54,11 @@ def split_incorrect(text):
     If not, then looks for the closest one word in the dictionary
     Returns the entire text with all words corrected
     '''
-    text = text.translate(str.maketrans('', '', string.punctuation))
-    words = text.split()
-    fixed_words =[decide_split(decontracted(word)) for word in words]
+    #Remove all punctuation
+    decontracted = decontract(text)
+    no_punct = decontracted.translate(str.maketrans('', '', string.punctuation))
+    words = no_punct.split()
+    # replace contractions
+    fixed_words =[replace_nearest(word) if not spellcheck[word] else word for word in words]
     final = " ".join(fixed_words)
     return final
