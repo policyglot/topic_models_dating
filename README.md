@@ -8,6 +8,8 @@ This codes runs on Python 3.6 for the majority of the analysis, and then switche
 
 ```pip install -r requirements.txt```
 
+The cleaning of the core text essays is far from a trivial task. Splitting the conjoined words required a total of 79 hours on a 4 Ghz processor for the 20,000+ profiles. I would strongly recommend doing this task in parallel, since none of the individual profiles' results depend on previous profiles. For this purpose, I have leveraged the mrjob framework in conjunction with AWS, which parallelizes and thus completes the task much faster. 
+
 #### Python
 * scikit-learn
 * gensim
@@ -18,7 +20,7 @@ This codes runs on Python 3.6 for the majority of the analysis, and then switche
 * textacy
 * tqdm
 * nltk
-* pyldavis
+* mrjob
 
 #### R
 * stm
