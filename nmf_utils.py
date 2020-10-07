@@ -1,4 +1,33 @@
 
+from sklearn.decomposition import NMF
+import pandas as pd
+
+
+def feature_vectors(corpus, kwargs=None):
+    """Multinomial and TF-IDF representations
+
+    Paramaters
+    ----------
+    corpus : array-like
+        A collection of documents
+    kwargs : dict, default None
+        Keyword arguments of variable length
+        See sklearn.feature_extraction.text.CountVectorizer
+        for accepted keyword arguments
+
+    Returns
+    -------
+    count : scipy.sparse.csr.csr_matrix
+        The multinomial representation shape (n_samples, n_features)
+    tfidf : scipy.sparse.csr.csr_matrix
+        The tf-idf representation
+    vocab : list
+        Vocabulary
+    """
+    assert isinstance(corpus, (list, pd.Series))
+    count, vocab = _multinomial(corpus, kwargs)
+    tfidf = _tfidf(count)
+    return count, tfidf, vocab
 
 def nmf_labels(tfidfmatrix, k):
     """For getting the labels (group assignment) associated with
@@ -17,6 +46,7 @@ def nmf_labels(tfidfmatrix, k):
     labels : np.ndarray
         An array of group assignments of length tfidfmatrix.shape[0] (users)
     """
+    from sklearn.decomposition import NMF
     H = NMF(n_components=k, random_state=42).fit_transform(tfidfmatrix)
     labels = np.argmax(H, axis=1)
     return labels
@@ -45,6 +75,7 @@ def nmf_inspect(tfidfmatrix, feature_names, k_vals=[3, 5, 7, 9], n_words=10):
     -------
     None
     """
+    from sklearn.decomposition import NMF
     for k in k_vals:
         nmf = NMF(n_components=k, random_state=42).fit(tfidfmatrix)
         print(k, end='\n')
