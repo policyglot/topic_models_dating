@@ -1,10 +1,10 @@
+numpy
+pandas
 scikit-learn
 gensim
 wordninja
 pyspellchecker
-beautifulsoup
-spacy
-textacy
+beautifulsoup4
 tqdm
 nltk
 pyldavis
